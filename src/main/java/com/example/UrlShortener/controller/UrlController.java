@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/url")
-@CrossOrigin("https://agent-6a664453e77980e--superlative-muffin-5a5d53.netlify.app")
+@CrossOrigin("https://sniplink-frontend1.vercel.app/")
 public class UrlController {
 
     @Autowired
