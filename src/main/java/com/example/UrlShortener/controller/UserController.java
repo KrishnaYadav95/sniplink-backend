@@ -17,7 +17,8 @@ public class UserController {
     public UserDetailService userDetailService;
 
     @PostMapping("/register")
-    public User register(@RequestBody User user){
-       return  userDetailService.register(user);
+    public User register(@RequestBody User user) {
+        System.out.println("REGISTER ENDPOINT HIT: " + user.getUsername());
+        return userDetailService.register(user);
     }
 }
