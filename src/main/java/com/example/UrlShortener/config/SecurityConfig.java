@@ -28,10 +28,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
+                // Removed .httpBasic() and .formLogin() — these were intercepting
+                // "/login" with Spring's own default handling, conflicting with
+                // your custom /user/login controller endpoint and causing
+                // mismatched behavior (redirects / 404s) when the frontend
+                // posts JSON instead of a browser form submission.
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler((request, response, authentication) -> {
                             response.sendRedirect("https://sniplink-frontend1.vercel.app");
