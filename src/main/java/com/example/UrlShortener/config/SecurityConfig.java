@@ -33,7 +33,9 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("https://sniplink-frontend1.vercel.app", true)
+                        .successHandler((request, response, authentication) -> {
+                            response.sendRedirect("https://sniplink-frontend1.vercel.app");
+                        })
                 )
                 .authenticationProvider(authenticationProvider);
 
