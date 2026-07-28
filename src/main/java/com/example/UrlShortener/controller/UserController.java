@@ -3,41 +3,78 @@ package com.example.UrlShortener.controller;
 import com.example.UrlShortener.model.User;
 import com.example.UrlShortener.service.UserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "https://sniplink-frontend1.vercel.app")
 public class UserController {
 
     @Autowired
-    public UserDetailService userDetailService;
+    private UserDetailService userDetailService;
 
     @Autowired
-    public AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
+
 
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
-        System.out.println("REGISTER ENDPOINT HIT: " + user.getUsername());
-        return userDetailService.register(user);
+    public ResponseEntity<?> register(@RequestBody User user) {
+
+        User savedUser = userDetailService.register(user);
+
+        return ResponseEntity.ok(savedUser);
     }
 
+
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        System.out.println("LOGIN ENDPOINT HIT: " + user.getUsername());
+    public ResponseEntity<?> login(@RequestBody User user) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                user.getUsername(),
+                                user.getPassword()
+                        )
+                );
+
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
+
+
+        return ResponseEntity.ok(
+                new LoginResponse(
+                        "Login successful",
+                        user.getUsername()
+                )
         );
+    }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return "Login successful";
+    static class LoginResponse {
+
+        private String message;
+        private String username;
+
+
+        public LoginResponse(String message, String username) {
+            this.message = message;
+            this.username = username;
+        }
+
+
+        public String getMessage() {
+            return message;
+        }
+
+
+        public String getUsername() {
+            return username;
+        }
     }
 }
