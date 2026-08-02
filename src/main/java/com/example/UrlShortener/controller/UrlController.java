@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/url")
-@CrossOrigin("https://sniplink-frontend1.vercel.app/")
 public class UrlController {
 
     @Autowired
