@@ -19,15 +19,24 @@ public class UserDetailService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    public User register(User user) {
+    public User register(User user){
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        User user = userRepository.findByUsername(username);
+//        if (user == null) throw new UsernameNotFoundException("User not found");
+//        return org.springframework.security.core.userdetails.User
+//                .withUsername(user.getUsername())
+//                .password(user.getPassword())
+//                .build();
+//    }
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) throw new UsernameNotFoundException("User not found");
+    public UserDetails loadUserByUsername(String username) {
+        User user= userRepository.findByUsername(username);
+        if(user==null) throw new UsernameNotFoundException("User not found in the repo");
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())

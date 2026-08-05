@@ -1,5 +1,6 @@
 package com.example.UrlShortener.config;
 
+import com.example.UrlShortener.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,6 +25,12 @@ public class SecurityConfig {
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -36,7 +43,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 // avoids redirecting unauthenticated requests to the OAuth provider (breaks CORS)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request , response , authException)->response.setStatus(HttpStatus.UNAUTHORIZED.value())))
                 .oauth2Login(oauth -> oauth
                         .successHandler((req, res, auth) -> res.sendRedirect(frontendUrl + "/?login=success"))
                         .failureHandler((req, res, ex) -> res.sendRedirect(frontendUrl + "/?error=oauth"))
@@ -47,8 +54,8 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .logoutSuccessHandler((req, res, auth) -> res.setStatus(HttpStatus.NO_CONTENT.value()))
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
-
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
